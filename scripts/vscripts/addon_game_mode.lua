@@ -1,8 +1,8 @@
 -- Generated from template
 require('game_setup')
 
-if CAddonTemplateGameMode == nil then
-	CAddonTemplateGameMode = class({})
+if ArenaGame == nil then
+	ArenaGame = class({})
 end
 
 function Precache( context )
@@ -17,32 +17,106 @@ end
 
 -- Create the game mode when we activate
 function Activate()
-	GameRules.AddonTemplate = CAddonTemplateGameMode()
+	GameRules.AddonTemplate = ArenaGame()
 	GameRules.AddonTemplate:InitGameMode()
 end
 
-function CAddonTemplateGameMode:InitGameMode()
+-- Helper function to print tables, not recursively tho
+function printTable(table)
+	for k,v in pairs(table) do
+		print(k, v)
+	end
+end
+
+function ArenaGame:InitGameMode()
 	print( "Template addon is loaded." )
-	GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 2)
-
+	
+	-- Define levels
+	self.currentLevel = 1
+	self.levelsTable = {
+		[1] = {
+			unitName = "npc_dota_creature_level_1",
+			unitCount = 2,
+			unitsKilled = 0
+		}, [2] = {
+			unitName = "npc_dota_creature_level_2",
+			unitCount = 1,
+			unitsKilled = 0,
+		}, [3] = {
+			unitName = "npc_dota_creature_level_1",
+			unitCount = 7,
+			unitsKilled = 0
+		}, [4] = {
+			unitName = "npc_dota_creature_level_2",
+			unitCount = 3,
+			unitsKilled = 0
+		}
+	}
+	
+	-- This is how foreach loops are used on tables in lua
+	-- for key, value in pairs(ArenaGame.levelsTable) do
+	-- 	print("Detta är nyckeln: " .. key)
+	-- 	print("Detta är värdet: " .. value)
+	-- end
+	
 	GameSetup:init()
+	-- Delay execution for:
+	GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 0)
+	GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 3)
+	
+	-- Highjack built-in game events to our liking!
+	ListenToGameEvent("entity_killed", Dynamic_Wrap(self, "OnEntityKilled"), self)
+end
 
-	-- for i=1, 10 do
-	-- 	CreateUnitByName("Ollieboo", Vector(500, -1500, 0), true, nil, nil, DOTA_TEAM_BADGUYS)
-	-- end
+function ArenaGame:GetLevel()
+	return self.levelsTable[self.currentLevel]
+end
 
-	-- for i=1, 10 do
-	-- 	CreateUnitByName("NinjaMaestro", Vector(-1600, 900, 0), true, nil, nil, DOTA_TEAM_BADGUYS)
-	-- end
+function ArenaGame:StartNextLevel()
+	print('START LEVEL!')
+	local level = self:GetLevel()
+	
+	-- Open portals?
+	-- Add portal sounds
+	-- After a short delay we spawn creatures
+	-- Or do we spawn directly, or maybe both?
+	-- How do we decide where to spawn creatures?
+	-- Is it always the same number of units?
+	local location = RandomVector(800)
+	for i=1, level.unitCount do
+		CreateUnitByName(level.unitName, location, true, nil, nil, DOTA_TEAM_BADGUYS)
+		print('unit created', location)
+	end
+end
 
+function ArenaGame:OnEntityKilled(args)
+	local unit = EntIndexToHScript(args.entindex_killed)
+	if unit ~= nil then
+		print('Unit was killed', unit:GetName())
+		if unit:GetTeam() == DOTA_TEAM_BADGUYS then
+			-- A level unit was killed
+			self:GetLevel().unitsKilled = self:GetLevel().unitsKilled + 1
+			self:CheckGameState()
+		end
+	end
+end
+
+function ArenaGame:CheckGameState()
+	local level = self:GetLevel()
+	if (level.unitsKilled == level.unitCount) then
+		print('Level Complete')
+		self.currentLevel = self.currentLevel + 1
+		GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 5)
+	end
 end
 
 -- Evaluate the state of the game
-function CAddonTemplateGameMode:OnThink()
+function ArenaGame:OnThink()
 	if GameRules:State_Get() == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
-		--print( "Template addon script is running." )
+		-- print( "Template addon script is running.", GameRules:GetGameTime())
 	elseif GameRules:State_Get() >= DOTA_GAMERULES_STATE_POST_GAME then
 		return nil
 	end
+	-- Calls this function again after 1 second
 	return 1
 end

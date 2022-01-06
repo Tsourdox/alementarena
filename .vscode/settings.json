@@ -1,0 +1,16 @@
+{
+    "Lua.diagnostics.globals": [
+        "class",
+        "GameRules",
+        "Vector",
+        "CreateUnitByName",
+        "DOTA_TEAM_BADGUYS",
+        "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS",
+        "DOTA_GAMERULES_STATE_POST_GAME",
+        "ListenToGameEvent",
+        "Dynamic_Wrap",
+        "EntIndexToHScript",
+        "RandomVector",
+        "printTable"
+    ]
+}
