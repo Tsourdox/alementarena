@@ -6,7 +6,7 @@ if GameSetup == nil then
   local forceHero = "npc_dota_hero_batrider"
   
   
-  function GameSetup:init()
+  function GameSetup:Init()
     if IsInToolsMode() then  --debug build
       --skip all the starting game mode stages e.g picking screen, showcase, etc
       GameRules:EnableCustomGameSetupAutoLaunch(true)

@@ -11,6 +11,13 @@
         "Dynamic_Wrap",
         "EntIndexToHScript",
         "RandomVector",
-        "printTable"
+        "printTable",
+        "IsInToolsMode",
+        "DOTA_GAMERULES_STATE_STRATEGY_TIME",
+        "PlayerResource",
+        "DOTA_ModifyXP_HeroKill",
+        "DOTA_ModifyXP_CreepKill",
+        "DOTA_TEAM_GOODGUYS",
+        "PlayerInstanceFromIndex"
     ]
 }

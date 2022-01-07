@@ -1,5 +1,7 @@
 -- Generated from template
+require('utils')
 require('game_setup')
+require('filters')
 
 if ArenaGame == nil then
 	ArenaGame = class({})
@@ -19,13 +21,6 @@ end
 function Activate()
 	GameRules.AddonTemplate = ArenaGame()
 	GameRules.AddonTemplate:InitGameMode()
-end
-
--- Helper function to print tables, not recursively tho
-function printTable(table)
-	for k,v in pairs(table) do
-		print(k, v)
-	end
 end
 
 function ArenaGame:InitGameMode()
@@ -53,19 +48,19 @@ function ArenaGame:InitGameMode()
 		}
 	}
 	
-	-- This is how foreach loops are used on tables in lua
-	-- for key, value in pairs(ArenaGame.levelsTable) do
-	-- 	print("Detta är nyckeln: " .. key)
-	-- 	print("Detta är värdet: " .. value)
-	-- end
+	local gameMode = GameRules:GetGameModeEntity()
+	GameSetup:Init()
 	
-	GameSetup:init()
 	-- Delay execution for:
-	GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 0)
-	GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 3)
+	gameMode:SetThink("OnThink", self, "GlobalThink", 0)
+	gameMode:SetThink("StartNextLevel", self, "SNL", 3)
 	
 	-- Highjack built-in game events to our liking!
 	ListenToGameEvent("entity_killed", Dynamic_Wrap(self, "OnEntityKilled"), self)
+	
+	-- Apply overrides to build-in beviours
+	gameMode:SetModifyExperienceFilter(SplitExperienceFilter, self)
+	gameMode:SetModifyGoldFilter(SplitGoldFilter, self)
 end
 
 function ArenaGame:GetLevel()
@@ -85,14 +80,14 @@ function ArenaGame:StartNextLevel()
 	local location = RandomVector(800)
 	for i=1, level.unitCount do
 		CreateUnitByName(level.unitName, location, true, nil, nil, DOTA_TEAM_BADGUYS)
-		print('unit created', location)
+		print('Unit ' .. i .. ' Created', location)
 	end
 end
 
 function ArenaGame:OnEntityKilled(args)
 	local unit = EntIndexToHScript(args.entindex_killed)
 	if unit ~= nil then
-		print('Unit was killed', unit:GetName())
+		print('A Unit Was Killed', unit:GetName())
 		if unit:GetTeam() == DOTA_TEAM_BADGUYS then
 			-- A level unit was killed
 			self:GetLevel().unitsKilled = self:GetLevel().unitsKilled + 1
@@ -106,7 +101,13 @@ function ArenaGame:CheckGameState()
 	if (level.unitsKilled == level.unitCount) then
 		print('Level Complete')
 		self.currentLevel = self.currentLevel + 1
-		GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 5)
+
+		if self.currentLevel > NrOf(self.levelsTable) then
+			print('GAME IS WON!')
+		else
+			print('Next Level Will Start In 5 Seconds')
+			GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 5)
+		end
 	end
 end
 
