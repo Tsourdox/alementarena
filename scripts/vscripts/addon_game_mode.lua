@@ -1,5 +1,7 @@
 -- Generated from template
+require('utils')
 require('game_setup')
+require('filters')
 
 if ArenaGame == nil then
 	ArenaGame = class({})
@@ -19,13 +21,6 @@ end
 function Activate()
 	GameRules.AddonTemplate = ArenaGame()
 	GameRules.AddonTemplate:InitGameMode()
-end
-
--- Helper function to print tables, not recursively tho
-function printTable(table)
-	for k,v in pairs(table) do
-		print(k, v)
-	end
 end
 
 function ArenaGame:InitGameMode()
@@ -64,23 +59,8 @@ function ArenaGame:InitGameMode()
 	ListenToGameEvent("entity_killed", Dynamic_Wrap(self, "OnEntityKilled"), self)
 	
 	-- Apply overrides to build-in beviours
-	gameMode:SetModifyExperienceFilter(
-		function (ctx, event)
-			local nrOfPlayers = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
-			for i=1, nrOfPlayers do
-				local playerID = PlayerResource:GetNthPlayerIDOnTeam(DOTA_TEAM_GOODGUYS, i)
-				local player = PlayerResource:GetPlayer(playerID)
-				local hero = player:GetAssignedHero()
-				
-				-- split the amount of xp evently among player heroes
-				local xp = event.experience / nrOfPlayers
-				hero:AddExperience(xp, DOTA_ModifyXP_CreepKill, false, false)
-				print('KillXP:', event.experience, 'Gave: ' .. xp .. 'xp each to ' .. nrOfPlayers .. ' players')
-			end
-			return false -- disable default exp
-		end,
-		self
-	)
+	gameMode:SetModifyExperienceFilter(SplitExperienceFilter, self)
+	gameMode:SetModifyGoldFilter(SplitGoldFilter, self)
 end
 
 function ArenaGame:GetLevel()
