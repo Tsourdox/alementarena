@@ -1,5 +1,6 @@
--- Generated from template
+-- Generated from template, this is where everthing starts!
 require('utils')
+require('levels')
 require('game_setup')
 require('filters')
 
@@ -28,28 +29,10 @@ function ArenaGame:InitGameMode()
 	
 	-- Define levels
 	self.currentLevel = 1
-	self.levelsTable = {
-		[1] = {
-			unitName = "npc_dota_creature_level_1",
-			unitCount = 2,
-			unitsKilled = 0
-		}, [2] = {
-			unitName = "npc_dota_creature_level_2",
-			unitCount = 1,
-			unitsKilled = 0,
-		}, [3] = {
-			unitName = "npc_dota_creature_level_1",
-			unitCount = 7,
-			unitsKilled = 0
-		}, [4] = {
-			unitName = "npc_dota_creature_level_2",
-			unitCount = 3,
-			unitsKilled = 0
-		}
-	}
+	self.levelsTable = GetDefaultLevelsTable()
 	
-	local gameMode = GameRules:GetGameModeEntity()
 	GameSetup:Init()
+	local gameMode = GameRules:GetGameModeEntity()
 	
 	-- Delay execution for:
 	gameMode:SetThink("OnThink", self, "GlobalThink", 0)

@@ -38,5 +38,17 @@ end
 
 -- Helper function to find out if a variable is a table or not
 function IsTable(t)
-    return type(t) == 'table'
+    return type(t or false) == 'table'
+end
+
+-- Merges two tables into one reccursivly making it possible to do deep clones
+function Merge(t1, t2)
+    for k,v in pairs(t2) do
+        if IsTable(v) or IsTable(t1[k]) then
+            t1[k] = Merge(t1[k] or {}, t2[k] or {})
+        else
+            t1[k] = v
+        end
+    end
+    return t1
 end
