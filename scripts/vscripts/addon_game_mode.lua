@@ -53,19 +53,34 @@ function ArenaGame:InitGameMode()
 		}
 	}
 	
-	-- This is how foreach loops are used on tables in lua
-	-- for key, value in pairs(ArenaGame.levelsTable) do
-	-- 	print("Detta är nyckeln: " .. key)
-	-- 	print("Detta är värdet: " .. value)
-	-- end
+	local gameMode = GameRules:GetGameModeEntity()
+	GameSetup:Init()
 	
-	GameSetup:init()
 	-- Delay execution for:
-	GameRules:GetGameModeEntity():SetThink("OnThink", self, "GlobalThink", 0)
-	GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 3)
+	gameMode:SetThink("OnThink", self, "GlobalThink", 0)
+	gameMode:SetThink("StartNextLevel", self, "SNL", 3)
 	
 	-- Highjack built-in game events to our liking!
 	ListenToGameEvent("entity_killed", Dynamic_Wrap(self, "OnEntityKilled"), self)
+	
+	-- Apply overrides to build-in beviours
+	gameMode:SetModifyExperienceFilter(
+		function (ctx, event)
+			local nrOfPlayers = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
+			for i=1, nrOfPlayers do
+				local playerID = PlayerResource:GetNthPlayerIDOnTeam(DOTA_TEAM_GOODGUYS, i)
+				local player = PlayerResource:GetPlayer(playerID)
+				local hero = player:GetAssignedHero()
+				
+				-- split the amount of xp evently among player heroes
+				local xp = event.experience / nrOfPlayers
+				hero:AddExperience(xp, DOTA_ModifyXP_CreepKill, false, false)
+				print('KillXP:', event.experience, 'Gave: ' .. xp .. 'xp each to ' .. nrOfPlayers .. ' players')
+			end
+			return false -- disable default exp
+		end,
+		self
+	)
 end
 
 function ArenaGame:GetLevel()
