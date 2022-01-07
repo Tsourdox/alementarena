@@ -7,7 +7,6 @@ custom_blink = class ({})
 function custom_blink:OnSpellStart()
     local caster = self:GetCaster()
     local target = self:GetCursorPosition()
-
     FindClearSpaceForUnit(caster, target, true)
 end
 
