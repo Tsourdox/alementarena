@@ -18,6 +18,9 @@
         "DOTA_ModifyXP_HeroKill",
         "DOTA_ModifyXP_CreepKill",
         "DOTA_TEAM_GOODGUYS",
-        "PlayerInstanceFromIndex"
+        "PlayerInstanceFromIndex",
+        "LinkLuaModifier",
+        "LUA_MODIFIER_MOTION_NONE",
+        "FindClearSpaceForUnit"
     ]
 }
