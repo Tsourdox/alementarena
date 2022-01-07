@@ -58,7 +58,7 @@ function ArenaGame:InitGameMode()
 	-- Highjack built-in game events to our liking!
 	ListenToGameEvent("entity_killed", Dynamic_Wrap(self, "OnEntityKilled"), self)
 	
-	-- Apply overrides to build-in beviours
+	-- Apply overrides to built-in behaviours
 	gameMode:SetModifyExperienceFilter(SplitExperienceFilter, self)
 	gameMode:SetModifyGoldFilter(SplitGoldFilter, self)
 end
