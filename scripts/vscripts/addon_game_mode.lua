@@ -80,14 +80,14 @@ function ArenaGame:StartNextLevel()
 	local location = RandomVector(800)
 	for i=1, level.unitCount do
 		CreateUnitByName(level.unitName, location, true, nil, nil, DOTA_TEAM_BADGUYS)
-		print('unit created', location)
+		print('Unit ' .. i .. ' Created', location)
 	end
 end
 
 function ArenaGame:OnEntityKilled(args)
 	local unit = EntIndexToHScript(args.entindex_killed)
 	if unit ~= nil then
-		print('Unit was killed', unit:GetName())
+		print('A Unit Was Killed', unit:GetName())
 		if unit:GetTeam() == DOTA_TEAM_BADGUYS then
 			-- A level unit was killed
 			self:GetLevel().unitsKilled = self:GetLevel().unitsKilled + 1
@@ -101,7 +101,13 @@ function ArenaGame:CheckGameState()
 	if (level.unitsKilled == level.unitCount) then
 		print('Level Complete')
 		self.currentLevel = self.currentLevel + 1
-		GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 5)
+
+		if self.currentLevel > NrOf(self.levelsTable) then
+			print('GAME IS WON!')
+		else
+			print('Next Level Will Start In 5 Seconds')
+			GameRules:GetGameModeEntity():SetThink("StartNextLevel", self, "SNL", 5)
+		end
 	end
 end
 
